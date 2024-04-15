@@ -1,5 +1,13 @@
 "use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import Button from "@/components/core/common/DemoButton";
+import { Grid, Layout, Menu } from "antd";
+import { Content, Header } from "antd/es/layout/layout";
+import Sider from "antd/es/layout/Sider";
+
 import {
   LaptopOutlined,
   MenuFoldOutlined,
@@ -7,13 +15,6 @@ import {
   NotificationOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Grid, Layout, Menu } from "antd";
-import { Content, Header } from "antd/es/layout/layout";
-import Sider from "antd/es/layout/Sider";
-import { deleteCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
-import React, { useLayoutEffect, useState } from "react";
-import { cookies } from "next/headers";
 
 export default function AdminLayout({
   children,
@@ -28,23 +29,65 @@ export default function AdminLayout({
     key,
     label: `nav ${key}`,
   }));
-  const demoitems2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
-    (icon, index) => {
-      const key = String(index + 1);
-      return {
-        key: `sub${key}`,
-        icon: React.createElement(icon),
-        label: `subnav ${key}`,
-        children: new Array(4).fill(null).map((_, j) => {
-          const subKey = index * 4 + j + 1;
-          return {
-            key: subKey,
-            label: `option${subKey}`,
-          };
-        }),
-      };
-    }
+
+  const menuItems: { NavBarItems: NavBarItems } = {
+    NavBarItems: {
+      Notifications: {
+        label: "Notifications",
+        icon: <NotificationOutlined />,
+        items: {
+          ViewNotifications: "View Notifications",
+          CreateNotifications: "Create Notifications",
+        },
+      },
+      Members: {
+        label: "Members",
+        icon: <UserOutlined />,
+        items: {
+          MemberList: "Member List",
+          Profile: "Profile",
+          Settings: "Settings",
+        },
+      },
+      Blogs: {
+        label: "Blogs",
+        icon: <LaptopOutlined />,
+        items: {
+          BlogList: "Blog List",
+          CreateBlog: "Create Blog",
+          YourBlog: "Your Blog",
+        },
+      },
+    },
+  };
+
+  const createSubMenuItems = (
+    items: {
+      [key: string]: string;
+    },
+    parentName: string
+  ): SubMenuItem[] => {
+    const router = useRouter();
+    return Object.keys(items).map((key) => ({
+      key,
+      label: items[key],
+      onClick: () => {
+        router.push(`/${parentName.toLowerCase()}/${key.toLowerCase()}`);
+      },
+    }));
+  };
+
+  const navBarSubmenus: MenuItem[] = Object.keys(menuItems.NavBarItems).map(
+    (key) => ({
+      key,
+      label: `${key}`,
+      icon: menuItems.NavBarItems[key].icon,
+      children: createSubMenuItems(menuItems.NavBarItems[key].items, key),
+    })
   );
+
+  const sideBarItems: MenuItem[] = [...navBarSubmenus];
+
   const [collapse, setCollapse] = useState<boolean>(false);
   //implement dashboard here
   //todo customize in need
@@ -118,8 +161,8 @@ export default function AdminLayout({
           <Menu
             mode="inline"
             defaultSelectedKeys={["1"]}
-            defaultOpenKeys={["sub1"]}
-            items={demoitems2}
+            defaultOpenKeys={["Notifications"]}
+            items={sideBarItems}
           />
         </Sider>
         <Layout
