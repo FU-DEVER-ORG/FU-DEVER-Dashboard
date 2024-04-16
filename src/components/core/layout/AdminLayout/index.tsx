@@ -1,19 +1,17 @@
 "use client";
-import Button from "@/components/core/common/DemoButton";
-import {
-  LaptopOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  NotificationOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { Grid, Layout, Menu } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
-import { deleteCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
-import React, { useLayoutEffect, useState } from "react";
-import { cookies } from "next/headers";
+
+import { menuItems } from "@/helpers/data/sidebar";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { SubMenuItem } from "@/model/entity/sidebar";
+
+import Button from "@/components/core/common/DemoButton";
+
 
 export default function AdminLayout({
   children,
@@ -25,35 +23,35 @@ export default function AdminLayout({
   const screens = useBreakpoint();
 
   const demoItem1 = [1, 2, 3].map((key) => ({
-    key,
+    key: key.toString(),
     label: `nav ${key}`,
   }));
-  const demoitems2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
-    (icon, index) => {
-      const key = String(index + 1);
-      return {
-        key: `sub${key}`,
-        icon: React.createElement(icon),
-        label: `subnav ${key}`,
-        children: new Array(4).fill(null).map((_, j) => {
-          const subKey = index * 4 + j + 1;
-          return {
-            key: subKey,
-            label: `option${subKey}`,
-          };
-        }),
-      };
-    }
-  );
-  const [collapse, setCollapse] = useState<boolean>(false);
-  //implement dashboard here
-  //todo customize in need
+
+  const createSubMenuItems = (items: SubMenuItem[], parentName: string) => {
+    return items.map(({ key, label }) => ({
+      key,
+      label,
+      onClick: () => {
+        route.push(
+          `/${parentName.toLowerCase()}/${label
+            .replace(/\s+/g, "-")
+            .toLowerCase()}`
+        );
+      },
+    }));
+  };
+
+  const sideBarSubmenus:SubMenuItem[] = menuItems.map(({ label, icon, items }) => ({
+    key: label,
+    label,
+    icon,
+    children: createSubMenuItems(items, label),
+  }));
+
+  const [collapse, setCollapse] = useState(false);
+
   return (
-    <Layout
-      style={{
-        height: "100vh",
-      }}
-    >
+    <Layout style={{ height: "100vh" }}>
       <Header
         style={{
           display: "flex",
@@ -118,8 +116,8 @@ export default function AdminLayout({
           <Menu
             mode="inline"
             defaultSelectedKeys={["1"]}
-            defaultOpenKeys={["sub1"]}
-            items={demoitems2}
+            defaultOpenKeys={["Notifications"]}
+            items={sideBarSubmenus}
           />
         </Sider>
         <Layout
