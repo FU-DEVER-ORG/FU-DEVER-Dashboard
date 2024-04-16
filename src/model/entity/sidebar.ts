@@ -1,23 +1,15 @@
-interface SubMenuItem {
-    key: string;
-    label: string;
-    onClick: () => void; 
-  }
-  
-  interface MenuItem {
-    key: string;
-    icon?: JSX.Element;
-    label: string;
-    children?: SubMenuItem[];
-  }
-  
-  interface NavBarItems {
-    [key: string]: {
-      label: string;
-      icon : JSX.Element;
-      items: {
-        [key: string]: string;
-      };
-    };
-  }
-  
+export type MenuItem = {
+  key: string;
+  label: string;
+  onClick?: () => void;
+};
+
+export type SubMenuItem = MenuItem & {
+  children?: MenuItem[];
+};
+
+export type SideBarItems = {
+  label: string;
+  icon: JSX.Element;
+  items: MenuItem[];
+};

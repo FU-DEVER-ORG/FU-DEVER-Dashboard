@@ -1,20 +1,17 @@
 "use client";
-
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import Button from "@/components/core/common/DemoButton";
 import { Grid, Layout, Menu } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 
-import {
-  LaptopOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  NotificationOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { menuItems } from "@/helpers/data/sidebar";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { SubMenuItem } from "@/model/entity/sidebar";
+
+import Button from "@/components/core/common/DemoButton";
+
 
 export default function AdminLayout({
   children,
@@ -26,77 +23,35 @@ export default function AdminLayout({
   const screens = useBreakpoint();
 
   const demoItem1 = [1, 2, 3].map((key) => ({
-    key,
+    key: key.toString(),
     label: `nav ${key}`,
   }));
 
-  const menuItems: { NavBarItems: NavBarItems } = {
-    NavBarItems: {
-      Notifications: {
-        label: "Notifications",
-        icon: <NotificationOutlined />,
-        items: {
-          ViewNotifications: "View Notifications",
-          CreateNotifications: "Create Notifications",
-        },
-      },
-      Members: {
-        label: "Members",
-        icon: <UserOutlined />,
-        items: {
-          MemberList: "Member List",
-          Profile: "Profile",
-          Settings: "Settings",
-        },
-      },
-      Blogs: {
-        label: "Blogs",
-        icon: <LaptopOutlined />,
-        items: {
-          BlogList: "Blog List",
-          CreateBlog: "Create Blog",
-          YourBlog: "Your Blog",
-        },
-      },
-    },
-  };
-
-  const createSubMenuItems = (
-    items: {
-      [key: string]: string;
-    },
-    parentName: string
-  ): SubMenuItem[] => {
-    const router = useRouter();
-    return Object.keys(items).map((key) => ({
+  const createSubMenuItems = (items: SubMenuItem[], parentName: string) => {
+    return items.map(({ key, label }) => ({
       key,
-      label: items[key],
+      label,
       onClick: () => {
-        router.push(`/${parentName.toLowerCase()}/${key.toLowerCase()}`);
+        route.push(
+          `/${parentName.toLowerCase()}/${label
+            .replace(/\s+/g, "-")
+            .toLowerCase()}`
+        );
       },
     }));
   };
 
-  const navBarSubmenus: MenuItem[] = Object.keys(menuItems.NavBarItems).map(
-    (key) => ({
-      key,
-      label: `${key}`,
-      icon: menuItems.NavBarItems[key].icon,
-      children: createSubMenuItems(menuItems.NavBarItems[key].items, key),
-    })
-  );
+  const sideBarSubmenus:SubMenuItem[] = menuItems.map(({ label, icon, items }) => ({
+    key: label,
+    label,
+    icon,
+    children: createSubMenuItems(items, label),
+  }));
 
-  const sideBarItems: MenuItem[] = [...navBarSubmenus];
+  const [collapse, setCollapse] = useState(false);
 
-  const [collapse, setCollapse] = useState<boolean>(false);
-  //implement dashboard here
-  //todo customize in need
   return (
-    <Layout
-      style={{
-        height: "100vh",
-      }}
-    >
+    <Layout style={{ height: "100vh" }}>
       <Header
         style={{
           display: "flex",
@@ -162,7 +117,7 @@ export default function AdminLayout({
             mode="inline"
             defaultSelectedKeys={["1"]}
             defaultOpenKeys={["Notifications"]}
-            items={sideBarItems}
+            items={sideBarSubmenus}
           />
         </Sider>
         <Layout
